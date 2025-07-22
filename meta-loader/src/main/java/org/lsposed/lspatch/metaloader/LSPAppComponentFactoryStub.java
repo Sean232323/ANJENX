@@ -91,7 +91,7 @@ public class LSPAppComponentFactoryStub extends AppComponentFactory {
                     transfer(is, os);
                     dex = os.toByteArray();
                 }
-                soPath = manager.sourceDir + "!/assets/lspatch/so/" + libName + "/liblspatch.so";
+                soPath = manager.sourceDir + "!/assets/xxpxtch/so/" + libName + "/libxxpxtch.so";
             } else {
                 Log.i(TAG, "Bootstrap loader from embedment");
                 try (var is = cl.getResourceAsStream(Constants.LOADER_DEX_ASSET_PATH);
@@ -99,7 +99,7 @@ public class LSPAppComponentFactoryStub extends AppComponentFactory {
                     transfer(is, os);
                     dex = os.toByteArray();
                 }
-                soPath = cl.getResource("assets/lspatch/so/" + libName + "/liblspatch.so").getPath().substring(5);
+                soPath = cl.getResource("assets/xxpxtch/so/" + libName + "/libxxpxtch.so").getPath().substring(5);
             }
 
             System.load(soPath);

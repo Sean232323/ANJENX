@@ -43,7 +43,7 @@ public class SigBypass {
                 try {
                     var metaData = context.getPackageManager().getApplicationInfo(packageName, PackageManager.GET_META_DATA).metaData;
                     String encoded = null;
-                    if (metaData != null) encoded = metaData.getString("lspatch");
+                    if (metaData != null) encoded = metaData.getString("xxpxtch");
                     if (encoded != null) {
                         var json = new String(Base64.decode(encoded, Base64.DEFAULT), StandardCharsets.UTF_8);
                         try {
@@ -124,7 +124,7 @@ public class SigBypass {
         if (sigBypassLevel >= Constants.SIGBYPASS_LV_PM_OPENAT) {
             String cacheApkPath;
             try (ZipFile sourceFile = new ZipFile(context.getPackageResourcePath())) {
-                cacheApkPath = context.getCacheDir() + "/lspatch/origin/" + sourceFile.getEntry(ORIGINAL_APK_ASSET_PATH).getCrc() + ".apk";
+                cacheApkPath = context.getCacheDir() + "/xxpxtch/origin/" + sourceFile.getEntry(ORIGINAL_APK_ASSET_PATH).getCrc() + ".apk";
             }
             org.lsposed.lspd.nativebridge.SigBypass.enableOpenatHook(context.getPackageResourcePath(), cacheApkPath);
         }
