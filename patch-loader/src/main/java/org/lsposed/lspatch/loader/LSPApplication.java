@@ -49,7 +49,7 @@ import hidden.HiddenApiBridge;
 @SuppressWarnings("unused")
 public class LSPApplication {
 
-    private static final String TAG = "LSPatch";
+    private static final String TAG = "xxpxtch";
     private static final int FIRST_APP_ZYGOTE_ISOLATED_UID = 90000;
     private static final int PER_USER_RANGE = 100000;
 
@@ -95,7 +95,7 @@ public class LSPApplication {
         switchAllClassLoader();
         SigBypass.doSigBypass(context, config.optInt("sigBypassLevel"));
 
-        Log.i(TAG, "LSPatch bootstrap completed");
+        Log.i(TAG, "bootstrap completed");
     }
 
     private static Context createLoadedApkWithContext() {

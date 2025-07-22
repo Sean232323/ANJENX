@@ -31,7 +31,7 @@ import de.robv.android.xposed.XposedHelpers;
 
 public class SigBypass {
 
-    private static final String TAG = "LSPatch-SigBypass";
+    private static final String TAG = "xxpxtch-SigBypass";
     private static final Map<String, String> signatures = new HashMap<>();
 
     private static void replaceSignature(Context context, PackageInfo packageInfo) {
