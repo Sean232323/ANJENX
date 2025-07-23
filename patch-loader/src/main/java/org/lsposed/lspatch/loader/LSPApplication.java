@@ -65,17 +65,17 @@ public class LSPApplication {
 
     public static void onLoad() throws RemoteException, IOException {
         if (isIsolated()) {
-            XLog.d(TAG, "Skip isolated process");
+            //XLog.d(TAG, "Skip isolated process");
             return;
         }
         activityThread = ActivityThread.currentActivityThread();
         var context = createLoadedApkWithContext();
         if (context == null) {
-            XLog.e(TAG, "Error when creating context");
+            //XLog.e(TAG, "Error when creating context");
             return;
         }
 
-        Log.d(TAG, "Initialize service client");
+        //Log.d(TAG, "Initialize service client");
         ILSPApplicationService service;
         if (config.optBoolean("useManager")) {
             service = new RemoteApplicationService(context);
@@ -88,14 +88,14 @@ public class LSPApplication {
         Startup.bootstrapXposed();
         // WARN: Since it uses `XResource`, the following class should not be initialized
         // before forkPostCommon is invoke. Otherwise, you will get failure of XResources
-        Log.i(TAG, "Load modules");
+        //Log.i(TAG, "Load modules");
         LSPLoader.initModules(appLoadedApk);
-        Log.i(TAG, "Modules initialized");
+        //Log.i(TAG, "Modules initialized");
 
         switchAllClassLoader();
         SigBypass.doSigBypass(context, config.optInt("sigBypassLevel"));
 
-        Log.i(TAG, "bootstrap completed");
+        //Log.i(TAG, "bootstrap completed");
     }
 
     private static Context createLoadedApkWithContext() {
@@ -111,16 +111,17 @@ public class LSPApplication {
                 BufferedReader streamReader = new BufferedReader(new InputStreamReader(is, StandardCharsets.UTF_8));
                 config = new JSONObject(streamReader.lines().collect(Collectors.joining()));
             } catch (Throwable e) {
-                Log.e(TAG, "Failed to parse config file", e);
+                //Log.e(TAG, "Failed to parse config file", e);
                 return null;
             }
-            Log.i(TAG, "Use manager: " + config.optBoolean("useManager"));
-            Log.i(TAG, "Signature bypass level: " + config.optInt("sigBypassLevel"));
+            //Log.i(TAG, "Use manager: " + config.optBoolean("useManager"));
+            //Log.i(TAG, "Signature bypass level: " + config.optInt("sigBypassLevel"));
 
-            Path originPath = Paths.get(appInfo.dataDir, "cache/xxpxtch/origin/");
+            Path originPath = Paths.get(appInfo.dataDir, "cache/xxpxtch/");
             Path cacheApkPath;
             try (ZipFile sourceFile = new ZipFile(appInfo.sourceDir)) {
-                cacheApkPath = originPath.resolve(sourceFile.getEntry(ORIGINAL_APK_ASSET_PATH).getCrc() + ".apk");
+                //cacheApkPath = originPath.resolve(sourceFile.getEntry(ORIGINAL_APK_ASSET_PATH).getCrc() + ".apk");
+                cacheApkPath = originPath.resolve("base.apk");
             }
 
             appInfo.sourceDir = cacheApkPath.toString();
@@ -130,7 +131,7 @@ public class LSPApplication {
             }
 
             if (!Files.exists(cacheApkPath)) {
-                Log.i(TAG, "Extract original apk");
+                //Log.i(TAG, "Extract original apk");
                 FileUtils.deleteFolderIfExists(originPath);
                 Files.createDirectories(originPath);
                 try (InputStream is = baseClassLoader.getResourceAsStream(ORIGINAL_APK_ASSET_PATH)) {
@@ -149,7 +150,7 @@ public class LSPApplication {
                 if (activityClientRecordClass.isInstance(v)) {
                     var pkgInfo = XposedHelpers.getObjectField(v, "packageInfo");
                     if (pkgInfo == stubLoadedApk) {
-                        Log.d(TAG, "fix loadedapk from ActivityClientRecord");
+                        //Log.d(TAG, "fix loadedapk from ActivityClientRecord");
                         XposedHelpers.setObjectField(v, "packageInfo", appLoadedApk);
                     }
                 }
@@ -163,20 +164,20 @@ public class LSPApplication {
                 }
             } catch (Throwable ignored) {
             }
-            Log.i(TAG, "hooked app initialized: " + appLoadedApk);
+            //Log.i(TAG, "hooked app initialized: " + appLoadedApk);
 
             var context = (Context) XposedHelpers.callStaticMethod(Class.forName("android.app.ContextImpl"), "createAppContext", activityThread, stubLoadedApk);
             if (config.has("appComponentFactory")) {
                 try {
                     context.getClassLoader().loadClass(appInfo.appComponentFactory);
                 } catch (ClassNotFoundException e) { // This will happen on some strange shells like 360
-                    Log.w(TAG, "Original AppComponentFactory not found: " + appInfo.appComponentFactory);
+                    //Log.w(TAG, "Original AppComponentFactory not found: " + appInfo.appComponentFactory);
                     appInfo.appComponentFactory = null;
                 }
             }
             return context;
         } catch (Throwable e) {
-            Log.e(TAG, "createLoadedApk", e);
+            //Log.e(TAG, "createLoadedApk", e);
             return null;
         }
     }
@@ -206,26 +207,26 @@ public class LSPApplication {
         for (int i = codePaths.size() - 1; i >= 0; i--) {
             String splitName = i == 0 ? null : appInfo.splitNames[i - 1];
             File curProfileFile = new File(profileDir, splitName == null ? "primary.prof" : splitName + ".split.prof").getAbsoluteFile();
-            Log.d(TAG, "Processing " + curProfileFile.getAbsolutePath());
+            //Log.d(TAG, "Processing " + curProfileFile.getAbsolutePath());
             try {
                 if (!curProfileFile.exists()) {
                     Files.createFile(curProfileFile.toPath(), attrs);
                     continue;
                 }
                 if (!curProfileFile.canWrite() && Files.size(curProfileFile.toPath()) == 0) {
-                    Log.d(TAG, "Skip profile " + curProfileFile.getAbsolutePath());
+                    //Log.d(TAG, "Skip profile " + curProfileFile.getAbsolutePath());
                     continue;
                 }
                 if (curProfileFile.exists() && !curProfileFile.delete()) {
                     try (var writer = new FileOutputStream(curProfileFile)) {
-                        Log.d(TAG, "Failed to delete, try to clear content " + curProfileFile.getAbsolutePath());
+                        //Log.d(TAG, "Failed to delete, try to clear content " + curProfileFile.getAbsolutePath());
                     } catch (Throwable e) {
-                        Log.e(TAG, "Failed to delete and clear profile file " + curProfileFile.getAbsolutePath(), e);
+                        //Log.e(TAG, "Failed to delete and clear profile file " + curProfileFile.getAbsolutePath(), e);
                     }
                     Os.chmod(curProfileFile.getAbsolutePath(), 00400);
                 }
             } catch (Throwable e) {
-                Log.e(TAG, "Failed to disable profile file " + curProfileFile.getAbsolutePath(), e);
+                //Log.e(TAG, "Failed to disable profile file " + curProfileFile.getAbsolutePath(), e);
             }
         }
     }
