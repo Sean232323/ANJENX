@@ -35,7 +35,7 @@ inline static auto __openat_ =
     "__openat"_sym.hook->*[]<lsplant::Backup auto backup>(int fd, const char *pathname, int flag,
                                                           int mode) static -> int {
     if (pathname == apkPath) {
-        LOGD("Redirect openat from {} to {}", pathname, redirectPath);
+        LOGI("Redirect openat from {} to {}", pathname, redirectPath);
         return backup(fd, redirectPath.c_str(), flag, mode);
     }
     return backup(fd, pathname, flag, mode);

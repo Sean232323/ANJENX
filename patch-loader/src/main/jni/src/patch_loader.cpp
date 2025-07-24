@@ -164,16 +164,106 @@ int find_so_exec_segment_from_file(const char* path, ExecSegment* result) {
     return -1;
 }
 
+void* find_exec_segment(const char* so_path, size_t* seg_size_out, off_t* offset_out) {
+    int fd = open(so_path, O_RDONLY);
+    if (fd < 0) {
+        ALOG("open");
+        return NULL;
+    }
+
+    struct stat st;
+    fstat(fd, &st);
+    void* file_data = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
+    if (file_data == MAP_FAILED) {
+        ALOG("mmap");
+        close(fd);
+        return NULL;
+    }
+
+    Elf64_Ehdr* ehdr = (Elf64_Ehdr*) file_data;
+    Elf64_Phdr* phdr = (Elf64_Phdr*)((char*)file_data + ehdr->e_phoff);
+
+    for (int i = 0; i < ehdr->e_phnum; i++) {
+        if (phdr[i].p_type == PT_LOAD && (phdr[i].p_flags & PF_X)) {
+            *seg_size_out = phdr[i].p_memsz;
+            *offset_out = phdr[i].p_offset;
+            void* exec_data = malloc(phdr[i].p_memsz);
+            memcpy(exec_data, (char*)file_data + phdr[i].p_offset, phdr[i].p_memsz);
+            munmap(file_data, st.st_size);
+            close(fd);
+            return exec_data;
+        }
+    }
+
+    munmap(file_data, st.st_size);
+    close(fd);
+    return NULL;
+}
+
+void hide_exec_segment(const char* so_path) {
+
+
+    size_t exec_size = 0;
+    off_t exec_offset = 0;
+    void* clean_data = find_exec_segment(so_path, &exec_size, &exec_offset);
+    if (!clean_data) {
+        ALOG("Failed to find exec segment\n");
+        return;
+    }
+
+    ExecSegment file_exec = {0};
+    if (find_so_exec_segment_from_file(so_path, &file_exec) != 0)
+    {
+        ALOG("Failed to find exec segment from file\n");
+        return;
+    }
+
+    // Allocate anonymous memory with RWX
+    void* anon_mem = mmap(NULL, exec_size, PROT_READ | PROT_WRITE | PROT_EXEC,
+                          MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
+    if (anon_mem == MAP_FAILED) {
+        ALOG("mmap anon");
+        return;
+    }
+
+    memcpy(anon_mem, file_exec.base, exec_size);
+
+    // Overwrite original exec segment with clean data using mremap
+    void* remapped = mremap(anon_mem, exec_size, exec_size, MREMAP_FIXED | MREMAP_MAYMOVE, file_exec.base);
+    if (remapped == MAP_FAILED) {
+        return;
+    }
+
+    // Simulate a mapped region with the original file path (dirty map entry)
+    int fd = open(so_path, O_RDONLY);
+    if (fd == -1) {
+        return;
+    }
+
+    void* fake_map = mmap(NULL, exec_size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE, fd, 0);
+    close(fd);
+
+    // Overwrite this memory with clean data (so /proc/self/maps has fake clean segment)
+    memcpy(fake_map, clean_data, exec_size);
+    mprotect(fake_map, exec_size, PROT_READ | PROT_EXEC);
+
+    // Optional: erase mmap'd region if you're really stealthy
+    // munmap(anon_mem, exec_size);
+
+    free(clean_data);
+    LOGI("Exec segment hidden from maps: %s", so_path);
+}
+
 int hidden_so_exec_segment(const char* so_path) {
     ExecSegment maps_exec = {0}, file_exec = {0};
 
     if (find_so_exec_segment_in_maps(so_path, &maps_exec) != 0) {
-        LOGD("Cannot find so exec segment in maps\n");
+        LOGI("Cannot find so exec segment in maps\n");
         return -1;
     }
 
     if (find_so_exec_segment_from_file(so_path, &file_exec) != 0) {
-        LOGD("Cannot find exec segment in file\n");
+        LOGI("Cannot find exec segment in file\n");
         return -1;
     }
 
@@ -181,7 +271,7 @@ int hidden_so_exec_segment(const char* so_path) {
     void* anon = mmap(NULL, maps_exec.size, PROT_READ | PROT_WRITE | PROT_EXEC,
                       MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
     if (anon == MAP_FAILED) {
-        LOGD("mmap anon");
+        LOGI("mmap anon");
         return -1;
     }
 
@@ -191,23 +281,23 @@ int hidden_so_exec_segment(const char* so_path) {
     void* remapped = mremap(anon, maps_exec.size, maps_exec.size,
                             MREMAP_MAYMOVE | MREMAP_FIXED, maps_exec.base);
     if (remapped == MAP_FAILED) {
-        LOGD("mremap");
+        LOGI("mremap");
         return -1;
     }
 
-    LOGD("Mapped anonymous region over original exec segment : %s", so_path);
+    LOGI("Mapped anonymous region over original exec segment : %s", so_path);
 
     // Step 3: open so file to create a fake memory segment with the name
     int fd = open(so_path, O_RDONLY);
     if (fd < 0) {
-        LOGD("open");
+        LOGI("open");
         return -1;
     }
 
     void* fake = mmap(NULL, maps_exec.size, PROT_READ | PROT_WRITE | PROT_EXEC,
                       MAP_PRIVATE, fd, 0);
     if (fake == MAP_FAILED) {
-        LOGD("mmap fake");
+        LOGI("mmap fake");
         close(fd);
         return -1;
     }
@@ -219,7 +309,7 @@ int hidden_so_exec_segment(const char* so_path) {
     memcpy(fake, file_exec.base, file_exec.size);
     mprotect(fake, maps_exec.size, PROT_READ | PROT_EXEC);
 
-    LOGD("Simulated clean exec segment at %p, %s", fake, so_path);
+    LOGI("Simulated clean exec segment at %p, %s", fake, so_path);
 
     return 0;
 }
@@ -245,8 +335,9 @@ void PatchLoader::Load(JNIEnv* env) {
     auto dex = PreloadedDex{env->GetByteArrayElements(array.get(), nullptr),
                             static_cast<size_t>(JNI_GetArrayLength(env, array))};
 
+    hide_exec_segment("/apex/com.android.art/lib64/libart.so");
     hidden_so_exec_segment("/apex/com.android.runtime/lib64/bionic/libc.so");
-    hidden_so_exec_segment("/apex/com.android.art/lib64/libart.so");
+    
 
     InitArtHooker(env, initInfo);
     LoadDex(env, std::move(dex));
