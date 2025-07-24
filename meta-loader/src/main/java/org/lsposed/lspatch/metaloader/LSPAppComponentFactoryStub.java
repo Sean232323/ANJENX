@@ -77,7 +77,7 @@ public class LSPAppComponentFactoryStub extends AppComponentFactory {
             }
 
             if (useManager) {
-                Log.i(TAG, "Bootstrap loader from manager");
+                //Log.i(TAG, "Bootstrap loader from manager");
                 var ipm = IPackageManager.Stub.asInterface(ServiceManager.getService("package"));
                 ApplicationInfo manager;
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -93,7 +93,7 @@ public class LSPAppComponentFactoryStub extends AppComponentFactory {
                 }
                 soPath = manager.sourceDir + "!/assets/xxpxtch/so/" + libName + "/libxxpxtch.so";
             } else {
-                Log.i(TAG, "Bootstrap loader from embedment");
+                //Log.i(TAG, "Bootstrap loader from embedment");
                 try (var is = cl.getResourceAsStream(Constants.LOADER_DEX_ASSET_PATH);
                      var os = new ByteArrayOutputStream()) {
                     transfer(is, os);

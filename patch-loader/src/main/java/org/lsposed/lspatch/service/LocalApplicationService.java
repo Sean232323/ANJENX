@@ -38,7 +38,7 @@ public class LocalApplicationService extends ILSPApplicationService.Stub {
                 }
 
                 if (!Files.exists(Paths.get(cacheApkPath))) {
-                    Log.i(TAG, "Extract module apk: " + packageName);
+                    //Log.i(TAG, "Extract module apk: " + packageName);
                     FileUtils.deleteFolderIfExists(Paths.get(modulePath));
                     Files.createDirectories(Paths.get(modulePath));
                     try (var is = context.getAssets().open("xxpxtch/modules/" + name)) {
@@ -53,7 +53,7 @@ public class LocalApplicationService extends ILSPApplicationService.Stub {
                 modules.add(module);
             }
         } catch (IOException e) {
-            Log.e(TAG, "Error when initializing LocalApplicationServiceClient", e);
+            //Log.e(TAG, "Error when initializing LocalApplicationServiceClient", e);
         }
     }
 
