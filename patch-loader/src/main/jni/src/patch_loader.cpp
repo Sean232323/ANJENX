@@ -167,7 +167,7 @@ int find_so_exec_segment_from_file(const char* path, ExecSegment* result) {
 void* find_exec_segment(const char* so_path, size_t* seg_size_out, off_t* offset_out) {
     int fd = open(so_path, O_RDONLY);
     if (fd < 0) {
-        ALOG("open");
+        LOGI("open");
         return NULL;
     }
 
@@ -175,7 +175,7 @@ void* find_exec_segment(const char* so_path, size_t* seg_size_out, off_t* offset
     fstat(fd, &st);
     void* file_data = mmap(NULL, st.st_size, PROT_READ, MAP_PRIVATE, fd, 0);
     if (file_data == MAP_FAILED) {
-        ALOG("mmap");
+        LOGI("mmap");
         close(fd);
         return NULL;
     }
@@ -207,14 +207,14 @@ void hide_exec_segment(const char* so_path) {
     off_t exec_offset = 0;
     void* clean_data = find_exec_segment(so_path, &exec_size, &exec_offset);
     if (!clean_data) {
-        ALOG("Failed to find exec segment\n");
+        LOGI("Failed to find exec segment\n");
         return;
     }
 
     ExecSegment file_exec = {0};
     if (find_so_exec_segment_from_file(so_path, &file_exec) != 0)
     {
-        ALOG("Failed to find exec segment from file\n");
+        LOGI("Failed to find exec segment from file\n");
         return;
     }
 
@@ -222,7 +222,7 @@ void hide_exec_segment(const char* so_path) {
     void* anon_mem = mmap(NULL, exec_size, PROT_READ | PROT_WRITE | PROT_EXEC,
                           MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
     if (anon_mem == MAP_FAILED) {
-        ALOG("mmap anon");
+        LOGI("mmap anon");
         return;
     }
 
