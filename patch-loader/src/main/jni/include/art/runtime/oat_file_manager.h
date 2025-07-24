@@ -38,7 +38,7 @@ public:
                    FileManager *thiz, const std::vector<const void *> &dex_files,
                    jobject class_loader, const char *class_loader_context) static -> void {
         if (lspd::Context::GetInstance()->GetCurrentClassLoader() == nullptr) {
-            LOGD("Disabled background verification");
+            //LOGD("Disabled background verification");
             return;
         }
         backup(thiz, dex_files, class_loader, class_loader_context);
@@ -52,7 +52,7 @@ public:
         []<MemBackup auto backup>(FileManager *thiz, const std::vector<const void *> &dex_files,
                                   jobject class_loader) static -> void {
         if (lspd::Context::GetInstance()->GetCurrentClassLoader() == nullptr) {
-            LOGD("Disabled background verification");
+            //LOGD("Disabled background verification");
             return;
         }
         backup(thiz, dex_files, class_loader);

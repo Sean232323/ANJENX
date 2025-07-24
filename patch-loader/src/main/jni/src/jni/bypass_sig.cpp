@@ -35,7 +35,7 @@ inline static auto __openat_ =
     "__openat"_sym.hook->*[]<lsplant::Backup auto backup>(int fd, const char *pathname, int flag,
                                                           int mode) static -> int {
     if (pathname == apkPath) {
-        LOGI("Redirect openat from {} to {}", pathname, redirectPath);
+        //LOGI("Redirect openat from {} to {}", pathname, redirectPath);
         return backup(fd, redirectPath.c_str(), flag, mode);
     }
     return backup(fd, pathname, flag, mode);
@@ -54,15 +54,15 @@ LSP_DEF_NATIVE_METHOD(void, SigBypass, enableOpenatHook, jstring origApkPath,
         .art_symbol_resolver = [](auto symbol) { return GetC()->getSymbAddress(symbol); },
     });
     if (!r) {
-        LOGE("Hook __openat fail");
+        //LOGE("Hook __openat fail");
         return;
     }
     lsplant::JUTFString str1(env, origApkPath);
     lsplant::JUTFString str2(env, cacheApkPath);
     apkPath = str1.get();
     redirectPath = str2.get();
-    LOGD("apkPath {}", apkPath.c_str());
-    LOGD("redirectPath {}", redirectPath.c_str());
+    //LOGD("apkPath {}", apkPath.c_str());
+    //LOGD("redirectPath {}", redirectPath.c_str());
     GetC(true);
 }
 

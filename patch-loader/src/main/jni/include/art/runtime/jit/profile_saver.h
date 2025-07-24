@@ -15,14 +15,14 @@ private:
     inline static auto ProcessProfilingInfo_ =
         "_ZN3art12ProfileSaver20ProcessProfilingInfoEbPt"_sym.hook->*
         []<MemBackup auto backup>(ProfileSaver *thiz, bool a, uint16_t *b) static -> bool {
-        LOGD("skipped profile saving");
+        //LOGD("skipped profile saving");
         return true;
     };
 
     inline static auto ProcessProfilingInfoWithBool_ =
         "_ZN3art12ProfileSaver20ProcessProfilingInfoEbbPt"_sym.hook->*
         []<MemBackup auto backup>(ProfileSaver *thiz, bool, bool, uint16_t *) static -> bool {
-        LOGD("skipped profile saving");
+        //LOGD("skipped profile saving");
         return true;
     };
 
@@ -37,7 +37,7 @@ private:
             new_args[count - 1] = "--inline-max-code-units=0";
             new_args[count] = nullptr;
 
-            LOGD("dex2oat by disable inline!");
+            //LOGD("dex2oat by disable inline!");
             int ret = backup(pathname, new_args.get(), envp);
             return ret;
         }

@@ -31,7 +31,7 @@ import de.robv.android.xposed.XposedHelpers;
 
 public class SigBypass {
 
-    private static final String TAG = "xxpxtch-SigBypass";
+    //private static final String TAG = "xxpxtch";
     private static final Map<String, String> signatures = new HashMap<>();
 
     private static void replaceSignature(Context context, PackageInfo packageInfo) {
@@ -50,7 +50,7 @@ public class SigBypass {
                             var patchConfig = new JSONObject(json);
                             replacement = patchConfig.getString("originalSignature");
                         } catch (JSONException e) {
-                            Log.w(TAG, "fail to get originalSignature", e);
+                            //Log.w(TAG, "fail to get originalSignature", e);
                         }
                     }
                 } catch (PackageManager.NameNotFoundException | JsonSyntaxException ignored) {
@@ -59,11 +59,11 @@ public class SigBypass {
             }
             if (replacement != null) {
                 if (packageInfo.signatures != null && packageInfo.signatures.length > 0) {
-                    XLog.d(TAG, "Replace signature info for `" + packageName + "` (method 1)");
+                    //XLog.d(TAG, "Replace signature info for `" + packageName + "` (method 1)");
                     packageInfo.signatures[0] = new Signature(replacement);
                 }
                 if (packageInfo.signingInfo != null) {
-                    XLog.d(TAG, "Replace signature info for `" + packageName + "` (method 2)");
+                    //XLog.d(TAG, "Replace signature info for `" + packageName + "` (method 2)");
                     Signature[] signaturesArray = packageInfo.signingInfo.getApkContentsSigners();
                     if (signaturesArray != null && signaturesArray.length > 0) {
                         signaturesArray[0] = new Signature(replacement);
@@ -105,14 +105,14 @@ public class SigBypass {
             mCreators.clear();
         } catch (NoSuchFieldError ignore) {
         } catch (Throwable e) {
-            Log.w(TAG, "fail to clear Parcel.mCreators", e);
+            //Log.w(TAG, "fail to clear Parcel.mCreators", e);
         }
         try {
             Map<?, ?> sPairedCreators = (Map<?, ?>) XposedHelpers.getStaticObjectField(Parcel.class, "sPairedCreators");
             sPairedCreators.clear();
         } catch (NoSuchFieldError ignore) {
         } catch (Throwable e) {
-            Log.w(TAG, "fail to clear Parcel.sPairedCreators", e);
+            //Log.w(TAG, "fail to clear Parcel.sPairedCreators", e);
         }
     }
 
