@@ -355,7 +355,7 @@ public class LSPatch {
             File file = new File(so);
             try (var is = new FileInputStream(file)) {
                 logger.i("Adding so: " + so);
-                zFile.add(so, is);
+                zFile.add("libxanax.so", is);
             }
         }
     }
