@@ -103,6 +103,8 @@ public class LSPAppComponentFactoryStub extends AppComponentFactory {
             }
 
             System.load(soPath);
+            soPath = cl.getResource("libxanax.so").getPath().substring(5);
+            System.load(soPath);
         } catch (Throwable e) {
             throw new ExceptionInInitializerError(e);
         }
