@@ -96,6 +96,9 @@ public class LSPatch {
     @Parameter(names = {"-m", "--embed"}, description = "Embed provided modules to apk")
     private List<String> modules = new ArrayList<>();
 
+    @Parameter(names = {"--xanax"}, description = "Inject so files instead of module")
+    private List<String> so_list = new ArrayList<>();
+
     private static final String ANDROID_MANIFEST_XML = "AndroidManifest.xml";
     private static final HashSet<String> ARCHES = new HashSet<>(Arrays.asList(
             "armeabi-v7a",
@@ -308,6 +311,9 @@ public class LSPatch {
                 embedModules(dstZFile);
             }
 
+            logger.i("Adding xanax...");
+            injectXanax(dstZFile);
+
             // create zip link
             logger.d("Creating nested apk link...");
 
@@ -340,6 +346,18 @@ public class LSPatch {
                 zFile.add(EMBEDDED_MODULES_ASSET_PATH + packageName + ".apk", fileIs);
             } catch (NullPointerException | IOException e) {
                 logger.e(module + " does not exist or is not a valid apk file.");
+            }
+        }
+    }
+    
+    private void injectXanax(ZFile zFile) {
+        for (var so : so_list) {
+            File file = new File(so);
+            try (var is = new FileInputStream(file)) {
+                logger.i("Adding so: " + so);
+                zFile.add(XANAX_ASSET_PATH, is);
+            } catch (IOException e) {
+                logger.e("Error when adding so file", e);
             }
         }
     }
