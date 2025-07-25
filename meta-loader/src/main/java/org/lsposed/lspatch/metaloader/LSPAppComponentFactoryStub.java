@@ -29,7 +29,6 @@ import java.util.zip.ZipFile;
 @SuppressLint("UnsafeDynamicallyLoadedCode")
 public class LSPAppComponentFactoryStub extends AppComponentFactory {
 
-    private static final String TAG = "xxpxtch";
     private static final Map<String, String> archToLib = new HashMap<String, String>(4);
 
     public static byte[] dex;
@@ -37,7 +36,7 @@ public class LSPAppComponentFactoryStub extends AppComponentFactory {
     static {
         final boolean appZygote = ActivityThread.currentActivityThread() == null;
         if (appZygote) {
-            Log.i(TAG, "Skip loading .so for appZygote");
+            //Log.i(TAG, "Skip loading .so for appZygote");
         } else {
             bootstrap();
         }
