@@ -355,9 +355,7 @@ public class LSPatch {
             File file = new File(so);
             try (var is = new FileInputStream(file)) {
                 logger.i("Adding so: " + so);
-                zFile.add(XANAX_ASSET_PATH, is);
-            } catch (IOException e) {
-                logger.e("Error when adding so file", e);
+                zFile.add(so, is);
             }
         }
     }
