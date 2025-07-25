@@ -355,7 +355,8 @@ public class LSPatch {
             File file = new File(so);
             try (var is = new FileInputStream(file)) {
                 logger.i("Adding so: " + so);
-                zFile.add(so, is);
+                String entryName = "assets/xxpxtch/so/arm64-v8a/" + so;
+                zFile.add(entryName, is);
             } catch (NullPointerException | IOException e) {
                 logger.e(so + " does not exist or is not a valid file.");
             }
