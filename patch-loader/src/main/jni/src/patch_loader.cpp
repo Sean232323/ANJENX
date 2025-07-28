@@ -117,9 +117,10 @@ void PatchLoader::Load(JNIEnv* env) {
     auto dex = PreloadedDex{env->GetByteArrayElements(array.get(), nullptr),
                             static_cast<size_t>(JNI_GetArrayLength(env, array))};
     
-    InitArtHooker(env, initInfo);
+    //no art hook
+    //InitArtHooker(env, initInfo);
     LoadDex(env, std::move(dex));
-    InitHooks(env);
+    //InitHooks(env);
 
     GetArt(true);
 
