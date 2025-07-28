@@ -80,8 +80,8 @@ void PatchLoader::LoadDex(JNIEnv* env, Context::PreloadedDex&& dex) {
 void PatchLoader::InitArtHooker(JNIEnv* env, const InitInfo& initInfo) {
     Context::InitArtHooker(env, initInfo);
     handler = initInfo;
-    //art::ProfileSaver::DisableInline(initInfo);
-    art::FileManager::DisableBackgroundVerification(initInfo);
+    art::ProfileSaver::DisableInline(initInfo);
+    //art::FileManager::DisableBackgroundVerification(initInfo);
 }
 
 void PatchLoader::InitHooks(JNIEnv* env) {
@@ -120,7 +120,7 @@ void PatchLoader::Load(JNIEnv* env) {
     //no art hook
     InitArtHooker(env, initInfo);
     LoadDex(env, std::move(dex));
-    //InitHooks(env);
+    InitHooks(env);
 
     GetArt(true);
 
